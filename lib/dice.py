@@ -5,6 +5,7 @@ import json
 import warc
 from bs4 import BeautifulSoup
 from warctools import parse_warc_payload
+import itertools
 
 OUT_FILE = "data/dice_processed/jobs.jsonlines"
 
@@ -32,14 +33,15 @@ def read_dice_data(filename):
         "telecommute": job_is_telecommute
       }
 
-jobs = []
+jobs = iter([])
 for warc_file in glob.glob("data/dice/*.warc"):
   print "Processing %s" % warc_file
   jobs_iterator = read_dice_data(warc_file)
-  unique_jobs = dict((str(x), x) for x in jobs_iterator).values()  
-  jobs.extend(unique_jobs)
+  jobs = itertools.chain(jobs, jobs_iterator)
+  # unique_jobs = dict((str(x), x) for x in jobs_iterator).values()  
+  # jobs.extend(unique_jobs)
 
 print "Writing processed data to %s" % OUT_FILE
 with open(OUT_FILE,"w") as out:
-  for job in jobs:
+  for job in jobs_iterator:
     out.write(json.dumps(job) + "\n")
