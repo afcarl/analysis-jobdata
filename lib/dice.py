@@ -1,8 +1,12 @@
+#! /usr/bin/env python
+
 import glob
 import json
 import warc
 from bs4 import BeautifulSoup
 from warctools import parse_warc_payload
+
+OUT_FILE = "data/dice_processed/jobs.jsonlines"
 
 def read_dice_data(filename):
   f = warc.open(filename)
@@ -30,10 +34,12 @@ def read_dice_data(filename):
 
 jobs = []
 for warc_file in glob.glob("data/dice/*.warc"):
-  jobs_iterator = read_dice_data(filename)
+  print "Processing %s" % warc_file
+  jobs_iterator = read_dice_data(warc_file)
   unique_jobs = dict((str(x), x) for x in jobs_iterator).values()  
   jobs.extend(unique_jobs)
 
-with open("data/dice_processed/jobs.jsonlines","w") as out:
+print "Writing processed data to %s" % OUT_FILE
+with open(OUT_FILE,"w") as out:
   for job in jobs:
     out.write(json.dumps(job) + "\n")
